@@ -1,0 +1,310 @@
+---
+title: "Exploring Iowa Hawkeye Basketball"
+date: '`r format(Sys.Date(), '%B %e, %Y')`'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(plotly)
+library(hexbin)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggridges)
+library(ggplot2)
+library(patchwork)
+```
+
+
+### Introduction
+
+Data for this project covers 5 seasons of Hawkeyes Men's basketball, from the 2012-13 through 2016-17 seasons. The data can be found here:
+
+https://console.cloud.google.com/marketplace/details/ncaa-bb-public/ncaa-basketball?pli=1
+
+The SQL queries on Google's service were fairly straightforward. Data was pulled from two tables: one focused on game-level information, and the other on play-by-play data. Results were filtered to games/plays involving the Hawkeyes and imported to R.
+
+### Querying and Cleaning the Data
+
+```{r}
+
+# Read in datasets
+
+shots <- read.csv("Hawkeye_data/Hawkeye_shots_data.csv", header = TRUE)
+home_games <- read.csv("Hawkeye_data/Hawkeye_home_games.csv", header = TRUE)
+away_games <- read.csv("Hawkeye_data/Hawkeye_away_games.csv", header = TRUE)
+
+```
+
+```{r}
+
+# Filter NAs from shots data
+shots_fil <- filter(shots, type != "", !is.na(event_coord_x), !is.na(event_coord_y))
+
+# Filter to only shooting data
+shots_fil <- filter(shots_fil, type %in% c('freethrow','fieldgoal','twopointmade','twopointmiss','threepointmade','threepointmiss'))
+
+# Convert event coordinates units to feet and shift to work with court graphic
+shots_fil$event_coord_x = shots_fil$event_coord_x/12 - 47
+shots_fil$event_coord_y = shots_fil$event_coord_y/12 - 25
+
+# Add calculated shot distance
+shots_fil$dist <- round(sqrt((abs(shots_fil$event_coord_x)-41.75)^2 + shots_fil$event_coord_y^2),3)
+
+# Make some variables factors
+shots_fil[,c(4,5,8,11)] <- lapply(shots_fil[,c(4,5,8,11)], factor)
+
+# Convert shot_made to logical
+shots_fil$shot_made <- as.logical(shots_fil$shot_made)
+
+# Add indicator column and combine Games data
+home_games$loc <- "Home"
+away_games$loc <- "Away"
+
+all_games <- rbind(home_games, away_games)
+all_games$loc <- as.factor(all_games$loc)
+
+# Get wins
+all_games <- all_games %>% mutate( 'game_result' = ifelse( (iowa_points - opp_points > 0), 1, 0 ) )
+
+# Get conference list
+big_ten <- unique(shots_fil$home_name[shots_fil$conference_game =='true'])
+all_games <- all_games %>% mutate( 'BigTen' = ifelse( opp_conf_name == "Big Ten", "yes", "no" ) )
+
+
+
+```
+
+### Home vs Away
+
+How did the Hawkeyes fare at Carver-Hawkeye Arena compared to when they travelled?
+
+```{r, fig.width=10, fig.asp=0.45}
+
+p_g <- ggplot(all_games, aes(x = opp_points, y = iowa_points, color = loc,
+                             text = paste("Hawkeyes:", iowa_points, "; ", opp_name,": " ,opp_points))) +
+          geom_point() + 
+          geom_abline(intercept = 0, slope = 1, color = "black", lty = 2) +
+          labs(title = "Final Scores in Hawkeyes Games, 2012-2017", x = "Opponents Score", y = "Hawkeyes Score", color = "Location") +
+          scale_color_manual(values = c("Away" = "#FFCD00",
+                                        "Home" = "black")) +
+          xlim(35,110) + ylim(40,120)
+
+
+
+wl_summary <- group_by(all_games, loc) %>%
+                summarize(tot = n(),
+                          wins = sum(game_result),
+                          losses = tot - wins)
+
+wl_df <- data.frame("Location" = c("Home","Home","Away","Away"), "Count" = c(71,30,26,40), "Result" = c("Win", "Loss", "Win", "Loss"))
+
+p_wl <- ggplot(wl_df, aes(x = Count, y = Location, fill = Result)) +
+        geom_col(position = "fill") +
+        labs(x = "", y = "")
+
+(p_g) + (p_wl)
+```
+
+The left plot above illustrates final scores in Hawkeye games. The dotted line represents a tie score. Points to the top left of this line indicate a Hawkeye win, and bottom right points represent losses. It's evident that Iowa wins a much higher proportion of home games than away games. This is made even clearer with the adjacent chart.
+
+```{r}
+
+home_summary <- summarize(all_games[all_games$loc == 'Home',],
+                              'Field Goal %' = mean(iowa_fgm)/mean(iowa_fga),
+                              'Free Throw %' = mean(iowa_ftm)/mean(iowa_fta),
+                              'Two Point %' = mean(iowa_twpm)/mean(iowa_twpa),
+                              'Three Point %' = mean(iowa_thpm)/mean(iowa_thpa))
+
+away_summary <- summarize(all_games[all_games$loc == 'Away',],
+                              'Field Goal %' = mean(iowa_fgm)/mean(iowa_fga),
+                              'Free Throw %' = mean(iowa_ftm)/mean(iowa_fta),
+                              'Two Point %' = mean(iowa_twpm)/mean(iowa_twpa),
+                              'Three Point %' = mean(iowa_thpm)/mean(iowa_thpa))
+
+games_df <- rbind(as.data.frame(matrix(cbind(colnames(home_summary), round(t(home_summary[1,]),4), rep("Home",4)),ncol = 3)),
+                 as.data.frame(matrix(cbind(colnames(away_summary), round(t(away_summary[1,]),4), rep("Away",4)),ncol = 3)))
+colnames(games_df) <- c("Metric", "Percentage", "Location")
+games_df$Percentage = as.numeric(games_df$Percentage)
+
+
+p_loc <- ggplot(games_df, aes(x = Metric, y = Percentage, fill = Location)) + 
+          geom_col(position = 'dodge') + 
+          scale_fill_manual(values = rep(c('#FFCD00','black'),4)) +
+          labs(title = "Hawkeye Shooting Metrics: Home vs Away", y = "", x = "")
+
+p_loc
+
+
+```
+
+The chart above shows a major contributing factor to the Hawkeyes better home performance is their shooting -- it's improved across the board.
+
+### Conference Comparisons
+
+How do the Hawkeyes do in Big Ten play compared to games against teams from outside the conference? The following two plots show that they're about middle-of-the-road in both shooting efficiency and scoring.
+
+```{r, message=FALSE}
+conf_summary <- group_by(all_games, opp_conf_name, BigTen) %>%
+                    summarize(iowa_fgp = mean(iowa_fgm)/mean(iowa_fga),
+                              iowa_points = mean(iowa_points),
+                              opp_fgp = mean(opp_fgm)/mean(opp_fga),
+                              opp_points = mean(opp_points))
+
+p_bar2 <- ggplot(conf_summary, aes(x = opp_conf_name, y = iowa_fgp, fill = BigTen)) +
+    labs(x = "", y = "Field Goal Pct", title = "Hawkeyes Field Goal Percentage by Opponent Conference") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    scale_fill_manual( values = c( "yes"="#0088ce", "no"="gray" ), guide = FALSE ) + 
+    geom_col() + 
+    geom_abline(intercept = conf_summary$iowa_fgp[conf_summary$BigTen == "yes"], slope = 0, color = "#0088ce", lty = 2)
+
+p_bar2
+
+
+p_bar3 <- ggplot(conf_summary, aes(x = opp_conf_name, y = iowa_points, fill = BigTen)) +
+    labs(x = "", y = "Points", title = "Hawkeyes Scoring by Opponent Conference") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    scale_fill_manual( values = c( "yes"="#0088ce", "no"="gray" ), guide = FALSE ) + 
+    geom_col() + 
+    geom_abline(intercept = conf_summary$iowa_points[conf_summary$BigTen == "yes"], slope = 0, color = "#0088ce", lty = 2)
+
+p_bar3
+
+```
+
+Breaking down these same results by conference teams, we can see that the Hawkeyes were fairly consistent in terms of field goal percentage, and \emph{slightly} more variable when is came to scoring. Interestingly, despite shooting the most effectively against Michigan, the Hawkeyes scored the third least points on average against them. This suggests factors beyond shooting (like rebounding and turnovers) can also have a significant impact on scoring, which is to be expected.
+
+```{r}
+
+big_ten_summary <- filter(all_games, opp_name %in% big_ten) %>%
+                    group_by(opp_name) %>%
+                    summarize(iowa_fgp = mean(iowa_fgm)/mean(iowa_fga),
+                              iowa_points = mean(iowa_points),
+                              opp_fgp = mean(opp_fgm)/mean(opp_fga),
+                              opp_points = mean(opp_points))
+
+
+p_bar <- ggplot(big_ten_summary, aes(y = opp_name, x = iowa_fgp, fill = opp_name)) +
+    labs(x = "", y = "Field Goal Pct", title = "Hawkeyes Field Goal Percentage against Big Ten Teams") +
+    scale_fill_manual(values = c("Badgers" = "#C5050C", 
+                               "Boilermakers" = "black", 
+                               "Buckeyes" = "#BB0000",
+                               "Cornhuskers" = "#E41C38",
+                               "Fighting Illini" = "#E84A27",
+                               "Golden Gophers" = "#7A0019",
+                               "Hoosiers" = "#990000",
+                               "Nittany Lions" = "#041E42",
+                               "Scarlet Knights" = "#CC0033",
+                               "Spartans" = "#18453B",
+                               "Terrapins" = "#E03A3E",
+                               "Wildcats" = "#4E2A84",
+                               "Wolverines" = "#00274C"), guide = FALSE) +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    geom_col()
+
+lbts_fgp <-
+    mutate(big_ten_summary,
+           opp_name = reorder(opp_name, iowa_fgp))
+p_bar %+% lbts_fgp
+
+p_bar_score <- ggplot(big_ten_summary, aes(y = opp_name, x = iowa_points, fill = opp_name)) +
+    labs(x = "", y = "Points", title = "Hawkeyes Scoring against Big Ten Teams") +
+    scale_fill_manual(values = c("Badgers" = "#C5050C", 
+                               "Boilermakers" = "black", 
+                               "Buckeyes" = "#BB0000",
+                               "Cornhuskers" = "#E41C38",
+                               "Fighting Illini" = "#E84A27",
+                               "Golden Gophers" = "#7A0019",
+                               "Hoosiers" = "#990000",
+                               "Nittany Lions" = "#041E42",
+                               "Scarlet Knights" = "#CC0033",
+                               "Spartans" = "#18453B",
+                               "Terrapins" = "#E03A3E",
+                               "Wildcats" = "#4E2A84",
+                               "Wolverines" = "#00274C"), guide = FALSE) +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    geom_col()
+
+lbts_pts <-
+    mutate(big_ten_summary,
+           opp_name = reorder(opp_name, iowa_points))
+p_bar_score %+% lbts_pts
+
+
+```
+
+
+
+### Shooting Distances
+
+Shooting three point shots has become increasingly common over the past decade. Do we see this trend over the 5 season span in this dataset? 
+
+```{r, message=FALSE}
+
+p_ridge <- ggplot(shots_fil, aes(x = dist, y = season)) +
+    geom_density_ridges(fill = '#FFCD00') + 
+    labs(x = "Distance", y = "Season", title = "Distribution of Shooting Distances in Hawkeye Basketball Games")
+
+p_ridge
+```
+
+The ridge plots above show the distribution of distances shots were taken from. There are three modes in the distribution: near the basket, at the free throw line, and just beyond the three-point arc. These distributions look very similar, so it doesn't appear shooting habits changed much over the timeframe.
+
+
+### Shot locations
+
+```{r}
+### Create court backdrop
+
+library(ggplot2)
+ 
+court <- ggplot(data=data.frame(y=1,x=1),aes(x,y))+
+    ###outside box:
+      geom_path(data=data.frame(y=c(-25,-25,25,25,-25),x=c(-47,47,47,-47,-47)))+
+    ###halfcourt line:
+      geom_path(data=data.frame(y=c(-25,25),x=c(0,0)))+
+    ###halfcourt semicircle:
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=c(sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=-c(sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+    ###solid FT semicircle above FT line:
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=c(28-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=-c(28-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+    ###dashed FT semicircle below FT line:
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=c(28+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x),linetype='dashed')+
+      geom_path(data=data.frame(y=c(-6000:(-1)/1000,1:6000/1000),x=-c(28+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x),linetype='dashed')+
+    ###key:
+      geom_path(data=data.frame(y=c(-8,-8,8,8,-8),x=c(47,28,28,47,47)))+
+      geom_path(data=data.frame(y=-c(-8,-8,8,8,-8),x=-c(47,28,28,47,47)))+
+    ###box inside the key:
+      geom_path(data=data.frame(y=c(-6,-6,6,6,-6),x=c(47,28,28,47,47)))+
+      geom_path(data=data.frame(y=c(-6,-6,6,6,-6),x=-c(47,28,28,47,47)))+
+    ###restricted area semicircle:
+      geom_path(data=data.frame(y=c(-4000:(-1)/1000,1:4000/1000),x=c(41.25-sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(y=y,x=x))+
+      geom_path(data=data.frame(y=c(-4000:(-1)/1000,1:4000/1000),x=-c(41.25-sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(y=y,x=x))+
+    ###rim:
+      geom_path(data=data.frame(y=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),x=c(c(41.75+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(41.75-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(y=y,x=x))+
+      geom_path(data=data.frame(y=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),x=-c(c(41.75+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(41.75-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(y=y,x=x))+
+    ###backboard:
+      geom_path(data=data.frame(y=c(-3,3),x=c(43,43)),lineend='butt')+
+      geom_path(data=data.frame(y=c(-3,3),x=-c(43,43)),lineend='butt')+
+    ###three-point line:
+      geom_path(data=data.frame(y=c(-20.75,-20750:(-1)/1000,1:20750/1000,20.75),x=c(47,41.75-sqrt(20.75^2-c(-20750:(-1)/1000,1:20750/1000)^2),47)),aes(y=y,x=x))+
+      geom_path(data=data.frame(y=c(-20.75,-20750:(-1)/1000,1:20750/1000,20.75),x=-c(47,41.75-sqrt(20.75^2-c(-20750:(-1)/1000,1:20750/1000)^2),47)),aes(y=y,x=x))+
+    ###fix aspect ratio to 1:1
+      coord_fixed()
+```
+
+
+Shot location data can be plotted on this court graphic.
+
+```{r}
+
+court
+
+```
+
+
+

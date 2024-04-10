@@ -1,0 +1,67 @@
+season,iowa_name,iowa_conf_name,iowa_points,iowa_fgm,iowa_fga,iowa_thpm,iowa_thpa,iowa_twpm,iowa_twpa,iowa_ftm,iowa_fta,opp_name,opp_conf_name,opp_points,opp_fgm,opp_fga,opp_thpm,opp_thpa,opp_twpm,opp_twpa,opp_ftm,opp_fta
+2015,Hawkeyes,Big Ten,82,31,65,11,27,20,38,9,10,Cyclones,Big 12,83,34,70,9,30,25,40,6,11
+2015,Hawkeyes,Big Ten,76,28,65,10,22,18,43,10,16,Spartans,Big Ten,59,23,55,4,21,19,34,9,13
+2015,Hawkeyes,Big Ten,68,27,63,5,24,22,39,9,15,Terrapins,Big Ten,74,26,58,6,25,20,33,16,23
+2015,Hawkeyes,Big Ten,64,22,54,3,12,19,42,17,22,Buckeyes,Big Ten,68,25,56,5,18,20,38,13,16
+2015,Hawkeyes,Big Ten,71,28,62,8,28,20,34,7,10,Wolverines,Big Ten,61,23,64,8,34,15,30,7,12
+2015,Hawkeyes,Big Ten,90,31,65,11,29,20,36,17,21,Scarlet Knights,Big Ten,76,31,64,4,17,27,47,10,13
+2015,Hawkeyes,Big Ten,70,25,58,7,19,18,39,13,20,Boilermakers,Big Ten,63,23,59,8,25,15,34,9,15
+2015,Hawkeyes,Big Ten,78,29,63,7,18,22,45,13,23,Hoosiers,Big Ten,85,29,63,9,25,20,38,18,21
+2015,Hawkeyes,Big Ten,77,28,65,8,20,20,45,13,16,Fighting Illini,Big Ten,65,26,66,8,25,18,41,5,6
+2015,Hawkeyes,Big Ten,75,21,51,8,24,13,27,25,35,Nittany Lions,Big Ten,79,26,56,10,28,16,28,17,22
+2015,Hawkeyes,Big Ten,89,36,66,12,22,24,44,5,7,Golden Eagles,Big East,61,22,57,7,30,15,27,10,14
+2015,Hawkeyes,Big Ten,77,27,62,12,24,15,38,11,17,Flyers,Atlantic 10,82,27,55,7,20,20,35,21,27
+2014,Hawkeyes,Big Ten,44,14,51,3,12,11,39,13,18,Panthers,Missouri Valley,56,20,44,6,18,14,26,10,15
+2013,Hawkeyes,Big Ten,83,29,64,3,18,26,46,22,30,Bulldogs,Missouri Valley,66,23,58,12,29,11,29,8,10
+2013,Hawkeyes,Big Ten,82,32,69,4,17,28,52,14,21,Cyclones,Big 12,85,28,59,6,17,22,42,23,36
+2013,Hawkeyes,Big Ten,89,31,59,9,16,22,43,18,22,Miners,Conference USA,53,18,52,5,22,13,30,12,21
+2014,Hawkeyes,Big Ten,60,18,55,3,20,15,35,21,24,Tar Heels,Atlantic Coast,55,19,68,4,23,15,45,13,17
+2013,Hawkeyes,Big Ten,65,24,58,4,16,20,42,13,15,Volunteers,Southeastern,78,24,54,5,21,19,33,25,30
+2013,Hawkeyes,Big Ten,76,28,60,7,20,21,40,13,15,Spartans,Big Ten,86,28,48,10,17,18,31,20,26
+2014,Hawkeyes,Big Ten,50,20,46,6,15,14,31,4,10,Badgers,Big Ten,82,29,59,9,22,20,37,15,19
+2013,Hawkeyes,Big Ten,71,25,64,4,10,21,54,17,25,Badgers,Big Ten,75,20,53,10,22,10,31,25,35
+2014,Hawkeyes,Big Ten,71,23,50,8,22,15,28,17,23,Buckeyes,Big Ten,65,24,57,6,24,18,33,11,15
+2013,Hawkeyes,Big Ten,84,29,61,5,17,24,44,21,26,Buckeyes,Big Ten,74,25,56,7,21,18,35,17,24
+2013,Hawkeyes,Big Ten,67,25,53,2,10,23,43,15,21,Wolverines,Big Ten,75,27,58,8,27,19,31,13,16
+2014,Hawkeyes,Big Ten,72,32,51,4,11,28,40,4,6,Wolverines,Big Ten,54,19,47,7,24,12,23,9,11
+2013,Hawkeyes,Big Ten,76,28,54,5,12,23,42,15,20,Wildcats,Big Ten,50,20,55,4,20,16,35,6,9
+2014,Hawkeyes,Big Ten,61,20,62,8,24,12,38,13,20,Wildcats,Big Ten,66,21,50,9,20,12,30,15,20
+2014,Hawkeyes,Big Ten,63,21,64,4,17,17,47,17,26,Boilermakers,Big Ten,67,25,53,4,20,21,33,13,23
+2013,Hawkeyes,Big Ten,86,34,70,4,20,30,50,14,22,Hoosiers,Big Ten,93,30,58,6,15,24,43,27,38
+2014,Hawkeyes,Big Ten,77,25,54,4,12,21,42,23,28,Hoosiers,Big Ten,63,23,60,10,25,13,35,7,11
+2013,Hawkeyes,Big Ten,81,26,56,5,16,21,40,24,30,Fighting Illini,Big Ten,74,25,56,6,15,19,41,18,23
+2014,Hawkeyes,Big Ten,74,29,58,5,10,24,48,11,13,Cornhuskers,Big Ten,46,17,52,2,18,15,34,10,14
+2014,Hawkeyes,Big Ten,77,25,48,8,16,17,32,19,27,Golden Gophers,Big Ten,75,27,59,9,25,18,34,12,16
+2013,Hawkeyes,Big Ten,89,31,64,10,25,21,39,17,22,Golden Gophers,Big Ten,95,30,49,11,19,19,30,24,29
+2013,Hawkeyes,Big Ten,82,22,55,7,19,15,36,31,40,Nittany Lions,Big Ten,70,26,65,3,16,23,49,15,21
+2014,Hawkeyes,Big Ten,81,24,67,8,21,16,46,25,27,Nittany Lions,Big Ten,77,27,69,10,28,17,41,13,20
+2014,Hawkeyes,Big Ten,68,28,60,5,15,23,45,7,10,Bulldogs,West Coast,87,32,52,10,16,22,36,13,21
+2013,Hawkeyes,Big Ten,77,24,68,6,23,18,45,23,34,Musketeers,Big East,74,25,64,6,24,19,40,18,28
+2013,Hawkeyes,Big Ten,83,29,69,11,24,18,45,14,21,Wildcats,Big East,88,27,63,14,38,13,25,20,30
+2017,Hawkeyes,Big Ten,78,33,74,11,36,22,38,1,8,Cyclones,Big 12,84,30,65,9,27,21,38,15,20
+2016,Hawkeyes,Big Ten,78,27,71,12,35,15,36,12,16,Fighting Irish,Atlantic Coast,92,26,55,10,23,16,32,30,33
+2017,Hawkeyes,Big Ten,55,22,66,5,20,17,46,6,10,Hokies,Atlantic Coast,79,25,58,7,23,18,35,22,28
+2016,Hawkeyes,Big Ten,66,21,64,4,21,17,43,20,27,Spartans,Big Ten,77,29,60,9,26,20,34,10,14
+2016,Hawkeyes,Big Ten,59,22,53,9,19,13,34,6,7,Badgers,Big Ten,57,23,54,6,23,17,31,5,14
+2016,Hawkeyes,Big Ten,83,30,62,16,26,14,36,7,13,Terrapins,Big Ten,69,26,58,11,34,15,24,6,9
+2017,Hawkeyes,Big Ten,64,25,59,6,20,19,39,8,10,Buckeyes,Big Ten,82,29,55,9,22,20,33,15,21
+2017,Hawkeyes,Big Ten,59,25,52,2,10,23,42,7,9,Wolverines,Big Ten,74,28,67,12,33,16,34,6,12
+2016,Hawkeyes,Big Ten,54,18,51,4,17,14,34,14,22,Wildcats,Big Ten,89,37,62,11,24,26,38,4,9
+2016,Hawkeyes,Big Ten,83,30,60,11,18,19,42,12,19,Scarlet Knights,Big Ten,63,25,64,4,15,21,49,9,14
+2017,Hawkeyes,Big Ten,64,24,61,8,19,16,42,8,10,Scarlet Knights,Big Ten,80,29,54,7,16,22,38,15,20
+2017,Hawkeyes,Big Ten,73,28,57,11,21,17,36,6,10,Terrapins,Big Ten,91,34,60,4,17,30,43,19,25
+2016,Hawkeyes,Big Ten,67,25,67,4,17,21,50,13,13,Boilermakers,Big Ten,89,34,67,12,29,22,38,9,10
+2017,Hawkeyes,Big Ten,64,25,65,10,24,15,41,4,9,Hoosiers,Big Ten,77,27,66,8,21,19,45,15,23
+2017,Hawkeyes,Big Ten,104,32,64,7,24,25,40,33,40,Fighting Illini,Big Ten,97,36,74,14,30,22,44,11,14
+2016,Hawkeyes,Big Ten,64,26,65,5,23,21,42,7,16,Fighting Illini,Big Ten,76,26,58,9,19,17,39,15,19
+2016,Hawkeyes,Big Ten,90,34,77,9,29,25,48,13,17,Cornhuskers,Big Ten,93,32,70,10,23,22,47,19,35
+2017,Hawkeyes,Big Ten,84,33,66,9,21,24,45,9,14,Cornhuskers,Big Ten,98,30,52,11,19,19,33,27,36
+2016,Hawkeyes,Big Ten,89,30,75,9,26,21,49,20,28,Golden Gophers,Big Ten,101,36,82,8,24,28,58,21,31
+2017,Hawkeyes,Big Ten,82,34,69,5,18,29,51,9,17,Golden Gophers,Big Ten,86,27,61,9,25,18,36,23,35
+2017,Hawkeyes,Big Ten,58,21,55,1,10,20,45,15,22,Nittany Lions,Big Ten,82,35,64,5,15,30,49,7,10
+2017,Hawkeyes,Big Ten,80,26,53,3,15,23,38,25,36,Buffaloes,Pacific 12,73,29,68,6,23,23,45,9,17
+2017,Hawkeyes,Big Ten,72,28,55,8,21,20,34,8,15,Jackrabbits,Summit League,80,27,61,10,20,17,41,16,19
+2014,Hawkeyes,Big Ten,63,22,55,6,21,16,34,13,20,Orange,Atlantic Coast,66,25,60,3,15,22,45,13,19
+2017,Hawkeyes,Big Ten,71,27,65,7,23,20,42,10,18,Wolverines,Big Ten,77,28,62,3,19,25,43,18,32
+2015,Hawkeyes,Big Ten,68,27,60,7,24,20,36,7,13,Wildcats,Big East,87,32,54,10,19,22,35,13,17
+2017,Hawkeyes,Big Ten,95,30,50,8,13,22,37,27,35,Blazers,Conference USA,85,31,69,7,25,24,44,16,18
