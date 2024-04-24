@@ -1,9 +1,9 @@
 ---
 title: "Exploring Iowa Hawkeye Basketball"
-date: '`r format(Sys.Date(), '%B %e, %Y')`'
+author: "Lyle Paukner"
 output:
-  pdf_document: default
-  html_document: default
+  html_document:
+      code_folding: "hide"
 ---
 
 ```{r, include = FALSE, echo=FALSE}
@@ -21,13 +21,9 @@ library(patchwork)
 
 ### Introduction
 
-Data for this project covers 5 seasons of Hawkeyes Men's basketball, from the 2012-13 through 2016-17 seasons. The data can be found here:
+Sports have been engrained in American (and global) culture as a primary past-time, whether being played or viewed. Sports statistics can provide passionate fans an additional avenue for enjoying their favorite teams. This project walks through several different visualizations on one particularly rich data set as examples of what can be done.
 
-https://console.cloud.google.com/marketplace/details/ncaa-bb-public/ncaa-basketball?pli=1
-
-The SQL queries on Google's service were fairly straightforward. Data was pulled from two tables: one focused on game-level information, and the other on play-by-play data. Results were filtered to games/plays involving the Hawkeyes and imported to R.
-
-### Querying and Cleaning the Data
+### The Data
 
 ```{r}
 
@@ -78,9 +74,13 @@ all_games <- all_games %>% mutate( 'BigTen' = ifelse( opp_conf_name == "Big Ten"
 
 ```
 
+The data for this project can be found here: [Google Big Query](https://console.cloud.google.com/marketplace/details/ncaa-bb-public/ncaa-basketball?pli=1). BigQuery is a data warehouse hosted by Google which contains databases about a large variety of topics, including one on NCAA Basketball. The NCAA database contains information about college teams, players, games, and even play-by-play information for more recent seasons. This is an unusually rich data set available for free -- something which is becoming increasingly uncommon in sports statistics.
+
+Data for this project covers 5 seasons of Hawkeyes Men's basketball, from the 2012-13 through 2016-17 seasons, as these are the most recent seasons having detailed play data. Downloading data from Google's service was fairly straightforward. Data were pulled from two tables: one focused on game-level information, and the other on play-by-play data. Results were filtered to games/plays involving the Hawkeyes and imported to R, where a few additional cleaning steps were performed (removing missing values, calculating shot distances from coordinate data, etc.).
+
 ### Home vs Away
 
-How did the Hawkeyes fare at Carver-Hawkeye Arena compared to when they travelled?
+A good starting point for exploring the Hawkeyes is a comparison of their performance at Carver-Hawkeye Arena compared to when they traveled.
 
 ```{r, fig.width=10, fig.asp=0.45}
 
@@ -143,9 +143,9 @@ p_loc
 
 The chart above shows a major contributing factor to the Hawkeyes better home performance is their shooting -- it's improved across the board.
 
-### Conference Comparisons
+### Conference and Opponent Comparisons
 
-How do the Hawkeyes do in Big Ten play compared to games against teams from outside the conference? The following two plots show that they're about middle-of-the-road in both shooting efficiency and scoring.
+How do the Hawkeyes do in Big Ten play compared to games against teams from outside their conference? The following two plots show that they're about middle-of-the-road in both shooting efficiency and scoring.
 
 ```{r, message=FALSE}
 conf_summary <- group_by(all_games, opp_conf_name, BigTen) %>%
@@ -238,9 +238,9 @@ p_bar_score %+% lbts_pts
 
 
 
-### Shooting Distances
+### Shot Locations
 
-Shooting three point shots has become increasingly common over the past decade. Do we see this trend over the 5 season span in this dataset? 
+Shooting three point shots has become increasingly common over the past decade. Do we see this trend begin to emerge over the 5 season span in this dataset? 
 
 ```{r, message=FALSE}
 
@@ -253,13 +253,11 @@ p_ridge
 
 The ridge plots above show the distribution of distances shots were taken from. There are three modes in the distribution: near the basket, at the free throw line, and just beyond the three-point arc. These distributions look very similar, so it doesn't appear shooting habits changed much over the timeframe.
 
+With the coordinate data avaiable to us, we can also plot specific shot locations on this court graphic (click to see code):
 
-### Shot locations
 
-```{r}
+```{r, echo=TRUE}
 ### Create court backdrop
-
-library(ggplot2)
  
 court <- ggplot(data=data.frame(y=1,x=1),aes(x,y))+
     ###outside box:
@@ -295,16 +293,67 @@ court <- ggplot(data=data.frame(y=1,x=1),aes(x,y))+
       geom_path(data=data.frame(y=c(-20.75,-20750:(-1)/1000,1:20750/1000,20.75),x=-c(47,41.75-sqrt(20.75^2-c(-20750:(-1)/1000,1:20750/1000)^2),47)),aes(y=y,x=x))+
     ###fix aspect ratio to 1:1
       coord_fixed()
-```
-
-
-Shot location data can be plotted on this court graphic.
-
-```{r}
 
 court
 
 ```
 
+Using this graphic, we can create a heat maps of shot locations. This first plot shows where the Hawkeyes' shots were taken from.
+
+```{r}
+
+p <- court + 
+    geom_hex(data = shots_fil, aes(x = event_coord_x, y = event_coord_y), alpha = 0.85) + 
+    scale_fill_gradient(low="#0088ce",high="black",trans="log10") +
+    labs(title = "Total Shots",
+       fill = "Number of shots")
+p
+
+```
+
+We can also create a plot for the proportion of shots made, and take it a step further by making it interactive.
+
+```{r}
+shots2 <- shots_fil %>%
+    group_by(event_coord_x, event_coord_y) %>%
+    dplyr::summarize(tot = n(),
+              shot_made = sum(shot_made),
+              prop_made = shot_made/tot)
 
 
+ncaa.hex <- hexbin::hexbin(shots_fil$event_coord_x, shots_fil$event_coord_y,
+                           xbins = 30, IDs = TRUE)
+
+# Deconstruct the relevant hexbin information into a dataset:
+hexagons <- data.frame(hexbin::hcell2xy(ncaa.hex),
+                       cell = ncaa.hex@cell,
+                       count = ncaa.hex@count)
+
+shots_fil$cell = ncaa.hex@cID
+
+prop.ncaa.hexagons <- shots_fil %>%
+    group_by(cell) %>%
+    dplyr::summarize(prop_made = mean(shot_made)) %>%
+    ungroup() %>%
+    right_join(hexagons, by = "cell") %>%
+    select(cell, x, y, prop_made) %>%
+    filter(prop_made > 0)
+
+
+p2 <- court + 
+    geom_hex(data = prop.ncaa.hexagons, aes(x = x, y = y, fill = prop_made), stat = "identity") +
+    scale_fill_gradient(low="#0088ce",high="black") +
+    labs(title = "Proportion of Shots Made Based on Coordinates",
+       fill = "Proportion of made shots")
+
+ggplotly(p2)
+
+
+
+```
+
+## Conclusion
+
+One of the things I find most wonderful about sports is that there is no one right way to enjoy them, or to find and consume information about them. Hopefully this brief overview of Hawkeyes basketball has encouraged or inspired you to ask and answer questions of your own.
+
+The queries and code for this project can be found in my [GitHub Repository](https://github.com/lpaukner/HawkeyeBasketballProject).
